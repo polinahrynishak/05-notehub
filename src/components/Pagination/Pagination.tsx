@@ -3,10 +3,11 @@ import css from "./Pagination.module.css";
 
 interface PaginationProps {
   pageCount: number;
+  currentPage: number;
   onChange: (selectedPage: number) => void;
 }
 
-const Pagination = ({ pageCount, onChange }: PaginationProps) => {
+const Pagination = ({ pageCount, currentPage, onChange }: PaginationProps) => {
   const handlePageClick = (event: { selected: number }) => {
     onChange(event.selected + 1);
   };
@@ -19,6 +20,7 @@ const Pagination = ({ pageCount, onChange }: PaginationProps) => {
       pageRangeDisplayed={3}
       marginPagesDisplayed={2}
       pageCount={pageCount}
+      forcePage={currentPage - 1}
       previousLabel="< previous"
       containerClassName={css.pagination}
       activeClassName={css.active}

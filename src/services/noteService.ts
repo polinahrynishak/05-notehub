@@ -12,10 +12,7 @@ const noteApi = axios.create({
 
 export interface FetchNotesResponse {
   notes: Note[];
-  totalNotes: number;
   totalPages: number;
-  currentPage: number;
-  perPage: number;
 }
 
 export interface FetchNotesParams {

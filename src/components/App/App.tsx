@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import type { NewNote } from "../../types/note";
-import { fetchNotes, createNote, deleteNote } from "../../services/noteService";
+import { fetchNotes } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
@@ -14,7 +13,6 @@ import ErrorMessage from "../Status/ErrorMessage";
 import EmptyState from "../Status/EmptyState";
 
 const App = () => {
-  const queryClient = useQueryClient();
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -24,24 +22,7 @@ const App = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["notes", page, debouncedSearch],
     queryFn: () => fetchNotes({ page, search: debouncedSearch, perPage: 12 }),
-  });
-
-  const { mutate: addNote } = useMutation({
-    mutationFn: (newNote: NewNote) => createNote(newNote),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-    },
-  });
-
-  const { mutate: removeNote } = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-    onError: () => {
-      alert("Failed to delete note.");
-    },
+    placeholderData: keepPreviousData,
   });
 
   const handleSearch = (value: string) => {
@@ -57,6 +38,7 @@ const App = () => {
         {data && data.totalPages > 1 && (
           <Pagination
             pageCount={data.totalPages}
+            currentPage={page}
             onChange={(selectedPage: number) => setPage(selectedPage)}
           />
         )}
@@ -71,7 +53,7 @@ const App = () => {
         {isError && <ErrorMessage />}
 
         {data && data.notes.length > 0 ? (
-          <NoteList notes={data.notes} onDelete={removeNote} />
+          <NoteList notes={data.notes} />
         ) : (
           !isLoading && !isError && <EmptyState />
         )}
@@ -79,10 +61,7 @@ const App = () => {
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm
-            onSubmit={(values) => addNote(values)}
-            onCancel={() => setIsModalOpen(false)}
-          />
+          <NoteForm onCancel={() => setIsModalOpen(false)} />
         </Modal>
       )}
     </div>
