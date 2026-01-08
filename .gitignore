@@ -1,6 +1,9 @@
 # Env vars
 .env
 
+# Editor directories and files
+.env
+
 # Logs
 logs
 *.log
